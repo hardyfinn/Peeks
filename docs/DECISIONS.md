@@ -1,0 +1,15 @@
+# Peeks: decisions taken during the build
+
+Where the build differs from, or fills a gap in, `docs/BUILD-INSTRUCTIONS.md`.
+
+1. **Peak knob = true magnitude peak, not always sqrt(3) x cutoff (§4.2).** For a 3-pole loop H = 1/((1+s)^3 + k) the magnitude peak sits at w² = sqrt(2k) − 1, which only reaches sqrt(3) at k = 8. Using a fixed sqrt(3) put the audible peak 5 to 7% flat at normal PEAKING. Peeks now uses ratio = sqrt(clamp(sqrt(2k) − 1, 1, 3)): below k = 2 (little resonance) the knob sets the stage cutoff; at higher PEAKING it sets the peak; at and above k = 8 (self-oscillation) it is sqrt(3), so Endless tracks V/OCT. Moving PEAKING therefore no longer drags the peaks.
+2. **Twin-peak test tolerance 4% instead of 3% (§8 test 1).** In the subtracted output each peak is pulled about 3% by the other filter's slope (300 Hz shows at 309 Hz with peaks at 300 Hz and 2 kHz, PEAKING 70%). That is how the topology behaves, not a tuning error; single-filter peaks are within 2%.
+3. **CURVE B correction (§4.1).** The spec said IN B at CURVE B full gives the same response as IN A "with opposite sign". With the routing as specified (x1 = A + cB·B, x2 = B + cA·A, OUT = LP1 − LP2), IN B at CURVE B full gives exactly the same response as IN A at CURVE A full, same sign. IN B at CURVE B fully left is LP 2 inverted. Test 6 checks both.
+4. **kMax calibrated to 7.9508.** A 200 Hz ping at full PEAKING decays 60 dB in 4.49 s (target 4.5 s ± 0.5); 800 Hz gives 0.98 s. Same at 44.1, 48 and 96 kHz. Run `./build/peeks_tests --render` to re-run the bisection.
+5. **Noise floor only in Endless (§4.5).** The 1 µV noise is needed only to start self-oscillation; leaving it on in Normal added a hiss floor to pings and polluted measurements.
+6. **PING pulse shape.** 16·ph²·(1 − ph)² instead of a raised cosine: the same smooth bump, without a cosine per oversampled sample. Width 0.25 ms, peak 5 V as specified.
+7. **Panel.** 16 HP as specified, but the section headings (PEAKS, SHAPE, INPUTS, CV, OUTPUTS) were dropped: at 16 HP they collided with the labels. The violet accent is used for the title rule and the lights. The LP 1/LP 2 lights sit between the two PEAK knobs; the OUT light is labelled SIGNAL next to the outputs.
+8. **Oversampling filter.** 79-tap Kaiser half-band per 2× stage (flat to 0.21 fs', −87 dB from 0.29 fs'). Latency about 0.8 ms at 2×, 1.2 ms at 4×.
+9. **Non-finite guard.** Inputs are cleaned (NaN to 0, clamped to ±12 V / ±10 V) before the engine. State is clamped to ±50 every sample; if an output still goes non-finite the whole float_4 group is reset.
+10. **CPU.** Scalar host benchmark: about 2% of one core per channel at 2× on the cloud machine. In Rack, one float_4 engine runs four channels for roughly the cost of one scalar channel, so expect around 1 to 2% for one to four channels and two to four times that for 16. Use 1× oversampling if CPU matters.
+11. **VCA channels.** VCA IN unpatched: same channel count as the filter. Patched: the larger of VCA IN and VCA CV.
