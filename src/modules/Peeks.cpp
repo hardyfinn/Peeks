@@ -65,7 +65,7 @@ struct Peeks : Module {
 		configParam(CURVEA_PARAM, 0.f, 1.f, 1.f, "Curve A (low-pass to twin peak)", "%", 0.f, 100.f);
 		configParam(CURVEB_PARAM, 0.f, 1.f, 1.f, "Curve B (low-pass to twin peak)", "%", 0.f, 100.f);
 		configParam(SELFFM_PARAM, 0.f, 1.f, 0.f, "Self FM", "%", 0.f, 100.f);
-		configParam(LEVEL_PARAM, 0.f, 1.f, 1.f, "VCA level", "%", 0.f, 100.f);
+		configParam(LEVEL_PARAM, 0.f, 1.f, 1.f, "VCA level", "%", 0.f, 100.f)->randomizeEnabled = false;
 		configButton(PING_PARAM, "Ping (strike the filter)");
 
 		configInput(INA_INPUT, "In A (filter 1, and filter 2 by Curve A)");
